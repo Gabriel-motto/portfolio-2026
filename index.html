@@ -101,8 +101,16 @@ h2.big .line:nth-child(2){padding-left:12vw}
 .no-anim .fill .w{opacity:1}
 .fill em{font-style:normal;color:var(--accent)}
 .about-grid{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.6fr);gap:clamp(32px,6vw,96px);margin-top:clamp(64px,9vw,130px);align-items:start}
-.photo{aspect-ratio:4/5;border:1px dashed var(--dim);border-radius:4px;display:grid;place-items:center;text-align:center;background:repeating-linear-gradient(135deg,transparent 0 12px,rgba(235,231,222,.025) 12px 13px);position:sticky;top:120px}
-.photo span{font-family:var(--mono);font-size:12px;color:var(--mute);padding:16px}
+.photo{position:sticky;top:120px;margin:0;aspect-ratio:962/1386;overflow:hidden;border-radius:4px;border:1px solid var(--line);
+  background:radial-gradient(70% 55% at 50% 38%,rgba(200,240,60,.16),transparent 70%),linear-gradient(180deg,var(--bg-2),var(--bg) 85%);isolation:isolate}
+.photo::before{content:"";position:absolute;inset:0;z-index:-1;background-image:linear-gradient(var(--line) 1px,transparent 1px),linear-gradient(90deg,var(--line) 1px,transparent 1px);background-size:32px 32px;opacity:.45;-webkit-mask-image:radial-gradient(60% 50% at 50% 40%,#000,transparent);mask-image:radial-gradient(60% 50% at 50% 40%,#000,transparent)}
+.photo img{display:block;width:100%;height:100%;object-fit:contain;object-position:50% 100%;
+  filter:grayscale(.85) contrast(1.04) drop-shadow(0 0 1px rgba(200,240,60,.55)) drop-shadow(0 0 18px rgba(200,240,60,.14));
+  transform:scale(1.01);transform-origin:50% 100%;transition:filter .8s cubic-bezier(.2,.8,.2,1),transform .8s cubic-bezier(.2,.8,.2,1)}
+.photo:hover img{filter:grayscale(0) contrast(1) drop-shadow(0 0 1px rgba(200,240,60,.7)) drop-shadow(0 0 26px rgba(200,240,60,.2));transform:scale(1.035)}
+.photo figcaption{position:absolute;left:14px;bottom:12px;font-family:var(--mono);font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:var(--mute);background:rgba(14,14,13,.7);padding:4px 8px;border-radius:2px}
+.photo figcaption b{color:var(--accent);font-weight:500}
+@media (hover:none){.photo img{filter:grayscale(0) drop-shadow(0 0 1px rgba(200,240,60,.55)) drop-shadow(0 0 18px rgba(200,240,60,.14))}}
 .story-intro{font-size:clamp(17px,1.4vw,20px);color:var(--mute);max-width:56ch;margin-bottom:40px}
 .story-intro strong{color:var(--fg);font-weight:500}
 .tl{list-style:none;border-top:1px solid var(--line)}
@@ -243,7 +251,7 @@ footer a:hover{color:var(--fg)}
   .row{grid-template-columns:48px minmax(0,1fr)}
   .row .meta{grid-column:2}
   .about-grid{grid-template-columns:1fr}
-  .photo{position:relative;top:0;max-width:280px;aspect-ratio:1}
+  .photo{position:relative;top:0;max-width:300px;width:100%}
   .stack-list{grid-template-columns:1fr 1fr}
   .contact-row{grid-template-columns:1fr}
 }
@@ -351,7 +359,7 @@ footer a:hover{color:var(--fg)}
     <p class="fill" id="fill">Soy desarrollador <em>full stack</em> junior. Me gusta llevar una idea de la base de datos a la pantalla sin que se pierda nada por el camino.</p>
 
     <div class="about-grid">
-      <div class="photo" data-reveal><span>[Foto — pendiente]</span></div>
+      <figure class="photo" data-reveal><img src="img/foto-perfil.webp" alt="Gabriel Motto Comesaña" width="962" height="1386" loading="lazy" decoding="async"><figcaption><b>●</b> Vigo, España</figcaption></figure>
       <div>
         <p class="story-intro" data-reveal>La versión corta: empecé con <strong>aplicaciones multiplataforma</strong>, me quedé con la <strong>web</strong> y nunca dejé del todo los <strong>videojuegos</strong>. La versión larga, por orden:</p>
         <ol class="tl">
