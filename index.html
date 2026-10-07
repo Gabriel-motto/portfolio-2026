@@ -78,9 +78,8 @@ img{display:block;max-width:100%}
 .hero-art .fallback svg{width:100%;height:100%;max-height:100%}
 .webgl-on .hero-art .fallback{opacity:0}
 .hero-label{position:relative;z-index:2;margin-bottom:22px}
-.hero h1{position:relative;z-index:2;font-size:min(12.4vw,17.5vh);width:fit-content}
+.hero h1{position:relative;z-index:2;font-size:min(9.4vw,17.5vh);width:fit-content}
 .hero h1 .l2{padding-left:9vw}
-.hero h1 .l4{padding-left:4.5vw}
 .hero-foot{position:relative;z-index:2;display:flex;justify-content:space-between;align-items:flex-end;gap:32px;margin-top:36px;padding-top:22px;border-top:1px solid var(--line)}
 .hero-foot .role{font-size:clamp(18px,1.7vw,24px);line-height:1.35;max-width:36ch;color:var(--mute)}
 .hero-foot .role strong{color:var(--fg);font-weight:500}
@@ -266,9 +265,8 @@ footer a:hover{color:var(--fg)}
   .hero{padding-top:84px;padding-bottom:28px;justify-content:flex-start}
   .hero-art{position:relative;right:auto;top:auto;width:100%;height:32svh;margin:0 0 6px}
   .hero-art .fallback{inset:4% 18%}
-  .hero h1{font-size:20.5vw}
+  .hero h1{font-size:18.5vw}
   .hero h1 .l2{padding-left:10vw}
-  .hero h1 .l4{padding-left:0}
   .hero-foot{flex-direction:column;align-items:flex-start;gap:18px;margin-top:26px}
   .scroll-cue{display:none}
   section{padding:96px var(--pad)}
@@ -342,14 +340,13 @@ footer a:hover{color:var(--fg)}
       <canvas id="voxel"></canvas>
     </div>
     <p class="hero-label label" data-hero>Gabriel Motto Comesaña <b>—</b> Vigo, España</p>
-    <h1 class="display" id="heroTitle" aria-label="Picando código desde 2021">
-      <span class="line l1"><span>Picando</span></span>
-      <span class="line l2"><span class="acc">código</span></span>
-      <span class="line l3"><span>desde</span></span>
-      <span class="line l4"><span>2021</span></span>
+    <h1 class="display" id="heroTitle" aria-label="Código que llega a producción.">
+      <span class="line l1"><span>Código</span></span>
+      <span class="line l2"><span>que llega</span></span>
+      <span class="line l3"><span>a <span class="acc">producción.</span></span></span>
     </h1>
     <div class="hero-foot" data-hero>
-      <p class="role"><strong>Desarrollador web full stack.</strong> Java, Spring Boot, React y Angular. Y videojuegos, cuando nadie mira.</p>
+      <p class="role"><strong>Full stack:</strong> Java, Spring Boot, React y Angular, del primer commit al deploy. En mi tiempo libre, creo videojuegos.</p>
       <span class="scroll-cue label"><i></i>Desliza</span>
     </div>
   </section>
@@ -632,7 +629,7 @@ footer a:hover{color:var(--fg)}
     .to('[data-hero]', { autoAlpha: 1, y: 0, duration: .9, ease: 'power3.out', stagger: .1 }, .45);
 
   /* hero kinetic type on scroll: lines drift apart */
-  [['.l1', -6], ['.l2', 8], ['.l3', -4], ['.l4', 10]].forEach(function(d){
+  [['.l1', -6], ['.l2', 8], ['.l3', -4]].forEach(function(d){
     gsap.to('#heroTitle ' + d[0], { xPercent: d[1], ease: 'none', scrollTrigger: { trigger: '#hero', start: 'top top', end: 'bottom top', scrub: true } });
   });
   gsap.to('.hero-foot', { autoAlpha: 0, ease: 'none', scrollTrigger: { trigger: '#hero', start: 'top top', end: '40% top', scrub: true } });
