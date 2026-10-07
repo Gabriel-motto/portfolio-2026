@@ -990,9 +990,10 @@ async function initFlight(){
   for (let i = 0; i < ST.length; i++){
     camPts.push(V[i]); lookPts.push(L[i]);
     if (i < ST.length - 1){
-      const lift = mobile ? 8 : 11;
-      camPts.push(V[i].clone().lerp(V[i + 1], .5).add(new THREE.Vector3(0, lift, -6)));
-      lookPts.push(L[i].clone().lerp(L[i + 1], .9));
+      // gentle rise-and-dive between islands: low peak, look target turns over the whole hop
+      const lift = mobile ? 4.5 : 6;
+      camPts.push(V[i].clone().lerp(V[i + 1], .5).add(new THREE.Vector3(0, lift, -3.5)));
+      lookPts.push(L[i].clone().lerp(L[i + 1], .62));
     }
   }
   camPts.push(V[5].clone().add(new THREE.Vector3(4, 8, 22))); lookPts.push(L[5].clone().add(new THREE.Vector3(0, 3, 0)));
@@ -1000,9 +1001,16 @@ async function initFlight(){
   const lookCurve = new THREE.CatmullRomCurve3(lookPts, false, 'centripetal');
   const LAST = camPts.length - 1;
 
-  // scroll progress → position on the rail, with a dwell at each project
-  const N = ST.length, C = ST.map((_, i) => .1 + i * .16), D = .045;
-  const ease = u => u < .5 ? 4 * u * u * u : 1 - Math.pow(-2 * u + 2, 3) / 2;
+  // scroll progress → position on the rail, with a dwell at each project.
+  // Budget in screens of scroll: intro, dwell per stop, transit between stops, outro.
+  const SCREENS = mobile ? 8 : 9;
+  const BUDGET = mobile ? { intro: .4, dwell: .55, outro: .4 } : { intro: .5, dwell: .6, outro: .5 };
+  const N = ST.length;
+  const TRANSIT = (SCREENS - BUDGET.intro - BUDGET.outro - N * BUDGET.dwell) / (N - 1);   // ≈ .88 desktop, .78 mobile
+  const D = BUDGET.dwell / 2 / SCREENS;
+  const C = ST.map((_, i) => (BUDGET.intro + BUDGET.dwell / 2 + i * (BUDGET.dwell + TRANSIT)) / SCREENS);
+  const SHOW = D + .2 / SCREENS;                                                         // panel stays up a bit past the dwell
+  const ease = u => .5 - .5 * Math.cos(Math.PI * u);                                    // sine in-out: peak speed 1.57× vs 3× for cubic
   function rail(p){
     if (p <= C[0] - D) return { idx: ease(Math.max(0, p) / (C[0] - D)), s: 0, t: 0, dwell: false };
     for (let i = 0; i < N; i++){
@@ -1062,13 +1070,14 @@ async function initFlight(){
   root.classList.add('flight-on');
   resize(); new ResizeObserver(resize).observe(flight);
   let target = 0, cur = 0;
+  const DAMP = mobile ? 3.6 : 5.5;   // 1/s → time constant ≈ 280 ms phone, 180 ms desktop
   const st = ScrollTrigger.create({
-    trigger: flight, start: 'top top', end: () => '+=' + Math.round(innerHeight * (mobile ? 6 : 7)),
+    trigger: flight, start: 'top top', end: () => '+=' + Math.round(innerHeight * SCREENS),
     pin: true, scrub: true, onUpdate: s => { target = s.progress; kick(); }
   });
   function goTo(i){
     const y = st.start + C[i] * (st.end - st.start);
-    if (window.__lenis) window.__lenis.scrollTo(y, { duration: 1.8 }); else scrollTo({ top: y, behavior: 'smooth' });
+    if (window.__lenis) window.__lenis.scrollTo(y, { duration: 2.4 }); else scrollTo({ top: y, behavior: 'smooth' });
   }
   ScrollTrigger.refresh();
 
@@ -1082,7 +1091,10 @@ async function initFlight(){
     raf = 0;
     const dt = Math.min(.05, (now - last) / 1000); last = now;
     stats.frames++; stats.ms.push(dt * 1000); if (stats.ms.length > 240) stats.ms.shift();
-    cur = capture ? target : cur + (target - cur) * Math.min(1, dt * 7);
+    // frame-rate-independent exponential damping towards the scroll position. Lenis already smooths
+    // the wheel on desktop, so damping is lighter there; touch flicks on phones get more. Snaps when settled.
+    if (capture) cur = target;
+    else { cur += (target - cur) * (1 - Math.exp(-dt * DAMP)); if (Math.abs(target - cur) < 1e-5) cur = target; }
     const r = rail(cur), u = r.idx / LAST, time = now / 1000;
     camCurve.getPoint(u, camera.position); lookCurve.getPoint(u, look);
     smx += (mx - smx) * .05; smy += (my - smy) * .05;
@@ -1093,19 +1105,19 @@ async function initFlight(){
 
     // the cat leads: it leaves first and lands before the camera arrives
     const a = CATSPOT[r.s], b = CATSPOT[Math.min(N - 1, r.s + 1)];
-    const f = r.t <= 0 ? 0 : Math.min(1, r.t / .72), fe = f * f * (3 - 2 * f);
-    catPos.copy(a).lerp(b, fe); catPos.y += 4 * 11 * fe * (1 - fe);
+    const f = r.t <= 0 ? 0 : Math.min(1, r.t / .82), fe = f * f * (3 - 2 * f);
+    catPos.copy(a).lerp(b, fe); catPos.y += 4 * 6.5 * fe * (1 - fe);
     const hopping = f > 0 && f < 1;
     if (!hopping) catPos.y += Math.abs(Math.sin(time * 2.2)) * .12;
     cat.position.copy(catPos);
     const wantYaw = hopping ? Math.atan2(b.x - a.x, b.z - a.z) : Math.atan2(camera.position.x - catPos.x, camera.position.z - catPos.z) - .6;   // three-quarter pose, so the tail shows
     let dy = wantYaw - yaw; dy = Math.atan2(Math.sin(dy), Math.cos(dy)); yaw += dy * Math.min(1, dt * 6);
-    cat.rotation.set(hopping ? (fe - .5) * .7 : 0, yaw, 0);
+    cat.rotation.set(hopping ? (fe - .5) * .45 : 0, yaw, 0);
     if (now > nextBlink){ blinkUntil = now + 130; nextBlink = now + 2400 + Math.random() * 2600; }
-    poseCat(time, now < blinkUntil ? .15 : 1, Math.sin(time * (hopping ? 9 : 3.2)) * (hopping ? .5 : .32));
+    poseCat(time, now < blinkUntil ? .15 : 1, Math.sin(time * (hopping ? 6 : 3.2)) * (hopping ? .42 : .32));
 
     // which project is on screen
-    let best = -1; C.forEach((c, i) => { if (Math.abs(cur - c) < .068) best = i; });
+    let best = -1; C.forEach((c, i) => { if (Math.abs(cur - c) < SHOW) best = i; });
     show(best);
 
     renderer.render(scene, camera);
